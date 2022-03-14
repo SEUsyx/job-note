@@ -14,7 +14,7 @@ using namespace std;
 class Trie {
 private:
     struct Node{
-        bool isEnd;
+        bool isEnd;  //注意这里的节点设计，用一个bool值来表示当前节点是否是一个单词的结尾
         vector<Node*> children;
         Node():isEnd(false), children(26, nullptr){}
     };
@@ -40,7 +40,7 @@ public:
 
     ~Trie(){
         int i=0;
-        for(auto&& t:pool){  //右值引用？？？
+        for(auto&& t:pool){  //引用折叠
             cout<<"~tris :"<<i++<<endl;
             delete t;
         }
@@ -76,6 +76,7 @@ int main() {
     cout << trie.StartsWith("app") << endl; // 返回 True
     trie.Insert("app");
     cout << trie.Search("app") << endl;     // 返回 True
+    
     //trie.Insert("spp");
 
     return 0;

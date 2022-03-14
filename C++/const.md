@@ -113,3 +113,33 @@ get count: take func 1
 add: take func 10
 add-const: take func 100
 ```
+
+### const变量如何保证不被修改
+
+- 分2种变量。一种是在函数内部定义的const，一种是定义在全局的const。
+  - 如果是函数内部定义的const，可以通过指针修改
+```C++
+const int const_value = 100;
+int * ptr = (int *)&const_value;
+*ptr = 200
+cout<<*ptr<<"  "<<const_value<<endl;
+//结果输出为200，100，其实已经通过指针将const_value变量地址内的值已经变成了200，但是由于编译器的优化，将const类型的const_value放在编译器的符号表内，计算时编译器直接从表中取值，所以输出为100
+```
+  - 如果是全局const变量，通过指针修改会报错runtime memory violation
+    - 原因：函数级变量是在函数的帧里的，程序拥有对这个存储区写的权限。而全局性的const变量是放在另一个存储区里的，程序默认不拥有写权限
+```C++
+#include <stdio.h>
+#include <stdlib.h>
+
+static const char const_data[16] = "I'm Const Data";
+
+int main(int args,char ** argv)
+{   
+    // 注意这里用了跟上面一样的trick来修改
+    char * pc = (char *)const_data;
+    *pc = 'X';
+    return 0;
+}
+
+//编译通过，运行会报错，在生成ELF的过程中，代码的各部分变量或者数据不是全部无脑放在一起的。他们会被放在不同的地方。可以上网搜一下怎么分析ELF文件。用readelf -S obj看一下ELF静态的目标分区。嗯，你会看见很多东西。简单说一下重点分区，其中.rodata 分区会存放全局常量（也就是我们这个例子中的const_data），.text分区存放源码编译的机器指令。你可以查到.rodata分区会和.text分区会加载到一个段中，并且可操作权限只有R + E，而没有W，所以你write的时候会报错----执行的时候发现你往一块没有写权限的内存写东西了。
+```

@@ -1,5 +1,7 @@
 # kmp算法
 
+next数组（前缀表）是用来回退的，它记录了模式串与主串(文本串)不匹配的时候，模式串应该从哪里开始重新匹配。
+
 ```C++
 #include<iostream>
 #include<vector>
