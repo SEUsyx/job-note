@@ -1,4 +1,4 @@
-# syx jobe note
+## syx jobe note
 
 ## Welcome to GitHub Pages
 
