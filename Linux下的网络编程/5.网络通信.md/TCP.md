@@ -165,39 +165,35 @@
   - SYN网络攻击
     - 在三次握手过程中，Server发送SYN-ACK之后，收到Client的ACK之前的TCP连接称为半连接（half-open connect），此时Server处于SYN_RCVD状态，当收到ACK后，Server转入ESTABLISHED状态。SYN攻击就是Client在短时间内伪造大量不存在的IP地址，并向Server不断地发送SYN包，Server回复确认包，并等待Client的确认，由于源地址是不存在的，因此，Server需要不断重发直至超时，这些伪造的SYN包将产时间占用未连接队列，导致正常的SYN请求因为队列满而被丢弃，从而引起网络堵塞甚至系统瘫痪。SYN攻击时一种典型的DDOS攻击，检测SYN攻击的方式非常简单，即当Server上有大量半连接状态且源IP地址是随机的，则可以断定遭到SYN攻击了.
 
-    - 半关闭:主动发起断开连接的一方接收到了对方的ACK确认,但对方还没有发FIN,此时主动发起方就处于半关闭状态(FIN_WAIT_2状态),处于半关闭的状态不能发送数据,但是可以接受数据.
-      - 相关函数:
-      - #include<sys/socket.h>
-      - int shutdown(int sockfd, int how)
-        - 作用:关闭套接字
-        - 参数:
-          - sockfd:套接字
-          - how:
-            - SHUT_RD:关闭读功能
-            - SHUT_WR:关闭写功能
-            - SHUT_RDWR:关闭读写功能,相当于close(sockfd)
-              - 注意:close是终止一个连接,但只是减少描述符的引用计数,并不直接关闭连接,只有引用计数为0的时候才关闭连接; shutdown不考虑描述符的引用计数,直接关闭描述符(可以根据参数how决定关闭方式)
-    - 查看网络信息相关命令:
-      - netstat
-        - 参数:
-          - -a:所有的socket
-          - -p:显示所有正在使用socket的程序的信息
-          - -n:直接使用IP地址,而不通过域名服务器
+### 半关闭:
+主动发起断开连接的一方接收到了对方的ACK确认,但对方还没有发FIN,此时主动发起方就处于半关闭状态(FIN_WAIT_2状态),处于半关闭的状态不能发送数据,但是可以接受数据.
+- 相关函数:
+  - #include<sys/socket.h>
+  - int shutdown(int sockfd, int how)
+    - 作用:关闭套接字
+    - 参数:
+      - sockfd:套接字
+      - how:
+        - SHUT_RD:关闭读功能
+        - SHUT_WR:关闭写功能
+        - SHUT_RDWR:关闭读写功能,相当于close(sockfd)
+          - 注意:close是终止一个连接,但只是减少描述符的引用计数,并不直接关闭连接,只有引用计数为0的时候才关闭连接; shutdown不考虑描述符的引用计数,直接关闭描述符(可以根据参数how决定关闭方式)
 
-    - 端口复用
-      - 作用:
-        - 防止服务器重启时之前绑定的端口还未释放S
-        - 程序突然退出而系统还没有释放端口
-      - 函数:
-        - int setsockopt(int sockfd, int level, int optname, const void* optval, socklen_t optlen);
-          - 作用:设置套接字的属性(不仅仅能设置端口复用),端口复用是在端口绑定之前(bind()函数之前)
-          - 参数:
-            - sockfd:要操作的套接字
-            - level:级别 SOL_SOCKET(端口复用的级别)
-            - optname:选项名称
-              - SO_REUSEADDR
-              - SO_REUSEPORT
-            - optval:端口复用的值(类型不定)
-              - 1:可以复用
-              - 0:不可以复用
-            - optlen:optval的参数的大小
+
+### 端口复用
+  - 作用:
+    - 防止服务器重启时之前绑定的端口还未释放S
+    - 程序突然退出而系统还没有释放端口
+  - 函数:
+    - int setsockopt(int sockfd, int level, int optname, const void* optval, socklen_t optlen);
+      - 作用:设置套接字的属性(不仅仅能设置端口复用),端口复用是在端口绑定之前(bind()函数之前)
+      - 参数:
+        - sockfd:要操作的套接字
+        - level:级别 SOL_SOCKET(端口复用的级别)
+        - optname:选项名称
+          - SO_REUSEADDR
+          - SO_REUSEPORT
+        - optval:端口复用的值(类型不定)
+          - 1:可以复用
+          - 0:不可以复用
+        - optlen:optval的参数的大小
